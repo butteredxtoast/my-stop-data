@@ -35,9 +35,12 @@ Route::get('/real-time-arrivals/{stopCode}/{agency}', function ($stopCode, $agen
         'stopCode' => $stopCode, // 15567
     ]);
 
+    // Strip any BOM from the response body
+    $cleanedResponse = preg_replace('/\x{FEFF}/u', '', $response->body());
+
     // Check if the response is successful
     if ($response->successful()) {
-        return response()->json($response->body()); // return JSON response
+        return response()->json(json_decode($cleanedResponse, true)); // return valid JSON
     } else {
         return response()->json(['error' => 'Unable to fetch data'], 500);
     }
