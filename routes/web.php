@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransitController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,59 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/real-time-arrivals/{stopCode}/{agency}', function ($stopCode, $agency) {
-    $apiKey = env('511_API_KEY');
-    $baseUrl = env('511_API_BASE_URL');
+// Real-time arrivals
+Route::get('/arrivals/{stopCode}/{agency}', [TransitController::class, 'getRealTimeArrivals']);
 
-    // Perform the API request with the stopCode and agency provided via the route
-    $response = Http::get("{$baseUrl}/StopMonitoring", [
-        'api_key' => $apiKey,
-        'agency' => $agency, // SF
-        'stopCode' => $stopCode, // 15567
-    ]);
+// Stops
+Route::get('/stops/{operator}', [TransitController::class, 'getStops']);
 
-    // Strip any BOM from the response body
-    $cleanedResponse = preg_replace('/\x{FEFF}/u', '', $response->body());
-
-    // Check if the response is successful
-    if ($response->successful()) {
-        return response()->json(json_decode($cleanedResponse, true)); // return valid JSON
-    } else {
-        return response()->json(['error' => 'Unable to fetch data'], 500);
-    }
-});
-
-Route::get('/stops/{operator}', function ($operator) {
-    $apiKey = env('511_API_KEY');
-    $baseUrl = env('511_API_BASE_URL');
-
-    // Fetch the list of stops for the given operator
-    $response = Http::get("{$baseUrl}/stops", [
-        'api_key' => $apiKey,
-        'operator_id' => $operator,
-    ]);
-
-    if ($response->successful()) {
-        // Return the list of stops
-        return response()->json($response->json());
-    } else {
-        return response()->json(['error' => 'Unable to fetch stop data'], 500);
-    }
-});
-
-Route::get('/operators', function () {
-    $apiKey = env('511_API_KEY');
-    $baseUrl = env('511_API_BASE_URL');
-
-    $response = Http::get("{$baseUrl}/operators", [
-        'api_key' => $apiKey,
-    ]);
-
-    if ($response->successful()) {
-        return response()->json($response->json());
-    } else {
-        return response()->json(['error' => 'Unable to fetch operator data'], 500);
-    }
-});
+// Operators
+Route::get('/operators', [TransitController::class, 'getOperators']);
 
 require __DIR__.'/auth.php';
