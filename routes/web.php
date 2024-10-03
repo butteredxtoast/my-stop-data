@@ -25,13 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Real-time arrivals
-Route::get('/arrivals/{stopCode}/{agency}', [TransitController::class, 'getRealTimeArrivals']);
+// Real-time arrivals route
+Route::get('/real-time-arrivals/{stopCode}/{agency}', [TransitController::class, 'getRealTimeArrivals']);
 
-// Stops
+// Stops route
 Route::get('/stops/{operator}', [TransitController::class, 'getStops']);
 
-// Operators
+// Operators route
 Route::get('/operators', [TransitController::class, 'getOperators']);
 
 require __DIR__.'/auth.php';

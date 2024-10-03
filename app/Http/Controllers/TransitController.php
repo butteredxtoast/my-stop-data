@@ -8,21 +8,21 @@ use Illuminate\Support\Facades\Http;
 class TransitController extends Controller
 {
     /**
-     * Fetch the real-time arrivals for a given stop code and agency.
+     * Get real-time arrivals for a given stop and agency.
      */
     public function getRealTimeArrivals($stopCode, $agency)
     {
         $apiKey = env('511_API_KEY');
         $baseUrl = env('511_API_BASE_URL');
 
-        // Perform the API request with the stopCode and agency provided via the route
+        // Perform the API request
         $response = Http::get("{$baseUrl}/StopMonitoring", [
             'api_key' => $apiKey,
-            'agency' => $agency, // SF
-            'stopCode' => $stopCode, // 15567
+            'agency' => $agency,
+            'stopCode' => $stopCode,
         ]);
 
-        // Strip any BOM from the response body
+        // Remove any BOM from the response body
         $cleanedResponse = preg_replace('/\x{FEFF}/u', '', $response->body());
 
         // Check if the response is successful
@@ -34,21 +34,20 @@ class TransitController extends Controller
     }
 
     /**
-     * Fetch the list of stops for a given operator.
+     * Get a list of stops for a given operator.
      */
     public function getStops($operator)
     {
         $apiKey = env('511_API_KEY');
         $baseUrl = env('511_API_BASE_URL');
 
-        // Fetch the list of stops for the given operator
+        // Fetch the list of stops
         $response = Http::get("{$baseUrl}/stops", [
             'api_key' => $apiKey,
             'operator_id' => $operator,
         ]);
 
         if ($response->successful()) {
-            // Return the list of stops
             return response()->json($response->json());
         } else {
             return response()->json(['error' => 'Unable to fetch stop data'], 500);
@@ -56,7 +55,7 @@ class TransitController extends Controller
     }
 
     /**
-     * Fetch the list of operators.
+     * Get a list of all operators.
      */
     public function getOperators()
     {
