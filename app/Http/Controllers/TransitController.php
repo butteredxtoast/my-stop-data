@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class TransitController extends Controller
 {
@@ -59,17 +60,15 @@ class TransitController extends Controller
      */
     public function getOperators()
     {
-        $apiKey = env('511_API_KEY');
-        $baseUrl = env('511_API_BASE_URL');
+        return Cache::remember('operators', now()->addDay(), function () {
+            $apiKey = env('511_API_KEY');
+            $baseUrl = env('511_API_BASE_URL');
 
-        $response = Http::get("{$baseUrl}/operators", [
-            'api_key' => $apiKey,
-        ]);
+            $response = Http::get("{$baseUrl}/operators", [
+                'api_key' => $apiKey,
+            ]);
 
-        if ($response->successful()) {
-            return response()->json($response->json());
-        } else {
-            return response()->json(['error' => 'Unable to fetch operator data'], 500);
-        }
+            return $response->successful() ? $response->json() : ['error' => 'Unable to fetch operator data'];
+        });
     }
 }
