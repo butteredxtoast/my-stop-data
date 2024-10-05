@@ -64,11 +64,21 @@ class TransitController extends Controller
             $apiKey = env('511_API_KEY');
             $baseUrl = env('511_API_BASE_URL');
 
-            $response = Http::get("{$baseUrl}/operators", [
-                'api_key' => $apiKey,
-            ]);
+            try {
+                $response = Http::get("{$baseUrl}/operators", [
+                    'api_key' => $apiKey,
+                ]);
 
-            return $response->successful() ? $response->json() : ['error' => 'Unable to fetch operator data'];
+                if ($response->successful()) {
+                    return $response->json();
+                } else {
+                    \Log::error('Failed to fetch operator data', ['response' => $response->body()]);
+                    return ['error' => 'Unable to fetch operator data'];
+                }
+            } catch (\Exception $e) {
+                \Log::error('Exception occurred while fetching operator data', ['exception' => $e->getMessage()]);
+                return ['error' => 'Unable to fetch operator data'];
+            }
         });
     }
 }
